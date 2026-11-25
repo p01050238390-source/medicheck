@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<title>메디체크 · 우리집 상비약 관리</title>
+<style>
+:root{
+  --bg:#f3f5f7; --card:#fff; --ink:#1f2933; --muted:#687482; --line:#e2e7ec;
+  --brand:#0f766e; --brand-dark:#0b5c56; --brand-weak:#e3f3f1;
+  --red:#c53030; --red-weak:#fdecec;
+  --yellow:#a86b00; --yellow-weak:#fff4cc; --yellow-line:#f2c94c;
+  --orange:#c05621; --orange-weak:#ffeadb;
+  --ok:#2f855a; --ok-weak:#e6f5ec;
+  --radius:16px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  background:var(--bg); color:var(--ink); font-size:16px; line-height:1.45;
+  -webkit-tap-highlight-color:transparent;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.wrap{max-width:520px;margin:0 auto;padding:0 16px 120px}
+
+/* 헤더 */
+header{
+  background:var(--brand); color:#fff; padding:18px 16px 56px;
+}
+.head-in{max-width:520px;margin:0 auto;padding:0 0;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-mark{width:38px;height:38px;border-radius:11px;background:#fff;display:grid;place-items:center}
+.logo-mark svg{width:24px;height:24px}
+.logo h1{font-size:21px;margin:0;letter-spacing:-.3px}
+.logo p{margin:0;font-size:13px;opacity:.85}
+.icon-btn{
+  border:1px solid rgba(255,255,255,.45); background:rgba(255,255,255,.12); color:#fff;
+  border-radius:12px; padding:8px 12px; font-size:14px; display:flex; align-items:center; gap:6px;
+}
+
+/* 요약 카드 */
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:-40px}
+.sum{
+  background:var(--card); border:2px solid transparent; border-radius:14px; padding:10px 4px 9px;
+  text-align:center; box-shadow:0 2px 8px rgba(15,23,42,.07);
+}
+.sum b{display:block;font-size:24px;line-height:1.1}
+.sum span{font-size:12px;color:var(--muted);white-space:nowrap}
+.sum.all b{color:var(--brand)}
+.sum.expired b{color:var(--red)}
+.sum.soon b{color:var(--yellow)}
+.sum.low b{color:var(--orange)}
+.sum.active{border-color:currentColor}
+.sum.all.active{border-color:var(--brand)}
+.sum.expired.active{border-color:var(--red)}
+.sum.soon.active{border-color:var(--yellow-line)}
+.sum.low.active{border-color:var(--orange)}
+
+.alert-line{
+  margin-top:12px; padding:10px 12px; border-radius:12px; font-size:14px;
+  background:var(--ok-weak); color:var(--ok);
+}
+.alert-line.warn{background:var(--red-weak);color:var(--red)}
+
+/* 검색·필터 */
+.search{margin-top:14px;position:relative}
+.search input{
+  width:100%; padding:12px 14px 12px 40px; border-radius:12px; border:1px solid var(--line); background:#fff;
+}
+.search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--muted)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:12px 0 4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{
+  flex:0 0 auto; border:1px solid var(--line); background:#fff; border-radius:999px; padding:7px 14px; font-size:14px;
+}
+.chip.active{background:var(--ink);border-color:var(--ink);color:#fff}
+
+/* 목록 */
+.list-head{display:flex;justify-content:space-between;align-items:baseline;margin:14px 2px 8px}
+.list-head h2{font-size:16px;margin:0}
+.list-head small{color:var(--muted)}
+.med{
+  background:var(--card); border-radius:var(--radius); padding:14px 14px 12px; margin-bottom:10px;
+  border-left:6px solid var(--ok); box-shadow:0 1px 4px rgba(15,23,42,.06);
+}
+.med.st-expired{border-left-color:var(--red);background:linear-gradient(0deg,#fff,#fff) padding-box}
+.med.st-soon{border-left-color:var(--yellow-line)}
+.med.st-low{border-left-color:var(--orange)}
+.med-top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.med-name{font-weight:700;font-size:17px;word-break:keep-all}
+.cat-tag{flex:0 0 auto;font-size:12px;color:var(--brand-dark);background:var(--brand-weak);padding:3px 8px;border-radius:8px}
+.med-maker{font-size:12.5px;color:var(--muted);margin-top:1px}
+.med-use{font-size:14px;color:var(--muted);margin-top:2px;word-break:keep-all}
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.badge{font-size:12.5px;font-weight:700;padding:3px 9px;border-radius:8px}
+.badge.red{background:var(--red-weak);color:var(--red)}
+.badge.yellow{background:var(--yellow-weak);color:var(--yellow)}
+.badge.orange{background:var(--orange-weak);color:var(--orange)}
+.badge.ok{background:var(--ok-weak);color:var(--ok)}
+.med-meta{font-size:13.5px;color:var(--muted);margin-top:8px;display:flex;flex-wrap:wrap;gap:4px 12px}
+.med-meta b{color:var(--ink)}
+.med-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:10px;gap:8px}
+.qty-box{display:flex;align-items:center;gap:6px}
+.qbtn{
+  min-width:44px;height:40px;border-radius:11px;border:1px solid var(--line);background:#fff;font-weight:700;font-size:15px;padding:0 10px;
+}
+.qbtn.use{background:var(--brand);border-color:var(--brand);color:#fff}
+.qbtn:disabled{opacity:.35;cursor:not-allowed}
+.qty-num{min-width:64px;text-align:center;font-size:15px}
+.qty-num b{font-size:19px}
+.med-actions{display:flex;gap:4px}
+.ghost{border:none;background:transparent;color:var(--muted);padding:8px;border-radius:10px;font-size:14px}
+.ghost:hover{background:#f0f2f4}
+.ghost.danger{color:var(--red)}
+
+.empty{
+  text-align:center;background:#fff;border-radius:var(--radius);padding:28px 18px;color:var(--muted);border:1px dashed var(--line)
+}
+.empty .big{font-size:40px}
+.empty p{margin:6px 0 14px}
+.btn{
+  border:none;border-radius:12px;padding:12px 16px;font-weight:700;font-size:15px;
+  background:var(--brand);color:#fff;
+}
+.btn.line{background:#fff;color:var(--brand);border:1px solid var(--brand)}
+.btn.gray{background:#eef1f4;color:var(--ink)}
+.btn.red{background:var(--red)}
+.btn.block{width:100%}
+
+.foot-note{font-size:12.5px;color:var(--muted);margin-top:18px;line-height:1.6}
+
+/* 하단 고정 등록 버튼 */
+.fab-bar{
+  position:fixed;left:0;right:0;bottom:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+  background:linear-gradient(180deg,rgba(243,245,247,0),var(--bg) 35%);
+}
+.fab-bar .btn{display:block;max-width:520px;margin:0 auto;width:100%;font-size:17px;padding:16px;border-radius:14px;box-shadow:0 6px 18px rgba(15,118,110,.35)}
+
+/* 시트·모달 공통 */
+.overlay{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;z-index:50}
+.overlay.show{display:block}
+.sheet{
+  position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-radius:20px 20px 0 0;
+  max-height:92vh;overflow-y:auto;transform:translateY(105%);transition:transform .25s ease;
+  padding:8px 18px calc(18px + env(safe-area-inset-bottom));
+}
+.sheet.show{transform:translateY(0)}
+.sheet-in{max-width:520px;margin:0 auto}
+.grab{width:44px;height:5px;border-radius:3px;background:#d5dbe1;margin:6px auto 10px}
+.sheet h3{margin:0 0 12px;font-size:19px}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:#eef1f4;border-radius:12px;padding:4px;margin-bottom:14px}
+.seg button{border:none;background:transparent;border-radius:9px;padding:9px;font-weight:600;color:var(--muted)}
+.seg button.active{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.field{margin-bottom:14px}
+.field>label,.field .lbl{display:block;font-size:14px;font-weight:700;margin-bottom:6px}
+.field .hint{font-size:12.5px;color:var(--muted);margin-top:5px}
+.inp,select.inp,textarea.inp{
+  width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:#fff;
+}
+textarea.inp{resize:vertical;min-height:64px}
+.inp:focus{outline:2px solid var(--brand);outline-offset:0;border-color:transparent}
+.info-box{
+  background:var(--brand-weak);border-radius:12px;padding:10px 12px;font-size:14px;margin-top:8px;color:var(--brand-dark)
+}
+.info-box b{display:block;margin-bottom:2px}
+.quick{display:flex;gap:8px;margin-top:8px}
+.quick button{flex:1;border:1px solid var(--brand);color:var(--brand);background:#fff;border-radius:10px;padding:9px 0;font-weight:700;font-size:14px}
+.quick button:active{background:var(--brand-weak)}
+.dday-preview{font-size:13.5px;margin-top:6px;font-weight:700}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.stepper{display:flex;align-items:center;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.stepper button{flex:0 0 42px;width:42px;height:46px;border:none;background:#f3f5f7;font-size:20px;font-weight:700}
+.stepper input{flex:1;min-width:0;border:none;text-align:center;font-size:17px;font-weight:700;height:46px}
+.sheet-actions{display:grid;grid-template-columns:1fr 2fr;gap:10px;margin-top:6px}
+.err{color:var(--red);font-size:13px;margin-top:5px;display:none}
+.err.show{display:block}
+
+.modal{
+  position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) scale(.96);z-index:70;background:#fff;border-radius:18px;
+  width:min(92vw,400px);padding:20px;display:none;opacity:0;transition:opacity .15s, transform .15s
+}
+.modal.show{display:block;opacity:1;transform:translate(-50%,-50%) scale(1)}
+.modal h4{margin:0 0 8px;font-size:18px}
+.modal p{margin:0 0 16px;color:var(--muted);font-size:15px;white-space:pre-line}
+.modal .acts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* QR */
+#qrPrint{text-align:center;padding:6px 0 0}
+#qrPrint img{width:220px;height:220px;display:block;margin:6px auto;border-radius:8px;background:#f3f5f7}
+#qrPrint .qr-title{font-weight:800;font-size:18px}
+#qrPrint .qr-sub{font-size:13px;color:var(--muted)}
+.qr-msg{font-size:13px;color:var(--muted);text-align:center;min-height:18px;margin:6px 0}
+
+/* 토스트(되돌리기) */
+.toast{
+  position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);z-index:80;
+  background:#1f2933;color:#fff;border-radius:14px;padding:10px 10px 10px 16px;display:flex;align-items:center;gap:12px;
+  width:min(92vw,488px);opacity:0;pointer-events:none;transition:all .2s;overflow:hidden
+}
+.toast.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
+.toast span{flex:1;font-size:14.5px}
+.toast button{border:none;background:#fff;color:#1f2933;font-weight:800;border-radius:10px;padding:8px 12px;white-space:nowrap}
+.toast .bar{position:absolute;left:0;bottom:0;height:3px;background:#5eead4;width:100%}
+.toast.show .bar{animation:shrink 5s linear forwards}
+@keyframes shrink{from{width:100%}to{width:0}}
+
+@media print{
+  body *{visibility:hidden !important}
+  #qrPrint,#qrPrint *{visibility:visible !important}
+  #qrPrint{position:fixed;left:0;top:30mm;width:100%}
+  #qrPrint img{width:60mm;height:60mm}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="head-in">
+    <div class="logo">
+      <div class="logo-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="14" rx="3" fill="#0f766e"/><rect x="8" y="3" width="8" height="4" rx="1.5" stroke="#0f766e" stroke-width="2"/><path d="M12 10v6M9 13h6" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>
+      </div>
+      <div>
+        <h1>메디체크</h1>
+        <p id="todayText">우리집 상비약 관리</p>
+      </div>
+    </div>
+    <button class="icon-btn" id="btnQr" type="button" aria-label="보관함 QR코드 만들기">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/></svg>
+      QR코드
+    </button>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- 피드백: 상단 상태 요약 -->
+  <section class="summary" aria-label="상태 요약">
+    <button class="sum all active" data-status="all" type="button"><b id="cAll">0</b><span>전체</span></button>
+    <button class="sum expired" data-status="expired" type="button"><b id="cExpired">0</b><span>기한 경과</span></button>
+    <button class="sum soon" data-status="soon" type="button"><b id="cSoon">0</b><span>30일 이내</span></button>
+    <button class="sum low" data-status="low" type="button"><b id="cLow">0</b><span>수량 부족</span></button>
+  </section>
+  <div class="alert-line" id="alertLine">상비약을 등록해 주세요.</div>
+
+  <div class="search">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="searchInp" type="search" placeholder="약 이름·효능·제조사·보관 위치 검색" aria-label="검색">
+  </div>
+  <nav class="chips" id="chips" aria-label="분류 필터"></nav>
+
+  <div class="list-head">
+    <h2 id="listTitle">전체 상비약</h2>
+    <small>위험한 항목부터 보여줘요</small>
+  </div>
+  <section id="list"></section>
+
+  <p class="foot-note">
+    · 효능 정보는 참고용이에요. 사용 전에 반드시 제품 설명서를 확인하고, 궁금한 점은 약사에게 물어보세요.<br>
+    · 입력한 정보는 서버로 보내지 않고 <b>이 기기 안에만</b> 저장돼요.
+  </p>
+</main>
+
+<!-- 행동유도성: 하단 고정 등록 버튼 -->
+<div class="fab-bar">
+  <button class="btn" id="btnAdd" type="button">+ 상비약 등록</button>
+</div>
+
+<div class="overlay" id="overlay"></div>
+
+<!-- 등록/수정 시트 -->
+<section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="sheet-in">
+    <div class="grab"></div>
+    <h3 id="sheetTitle">상비약 등록</h3>
+
+    <div class="seg" id="modeSeg">
+      <button type="button" data-mode="catalog" class="active">목록에서 선택</button>
+      <button type="button" data-mode="custom">직접 입력</button>
+    </div>
+
+    <!-- 목록에서 선택 -->
+    <div id="catalogArea">
+      <div class="field">
+        <label for="catalogSearch">약 찾기</label>
+        <input class="inp" id="catalogSearch" type="search" placeholder="예: 타이레놀, 설사, 연고, 동화약품">
+      </div>
+      <div class="field">
+        <label for="catalogSel">약 선택</label>
+        <select class="inp" id="catalogSel"></select>
+        <div class="info-box" id="catalogInfo" hidden></div>
+        <div class="err" id="errCatalog">약을 선택해 주세요.</div>
+      </div>
+    </div>
+
+    <!-- 직접 입력 -->
+    <div id="customArea" hidden>
+      <div class="field">
+        <label for="fName">약 이름</label>
+        <input class="inp" id="fName" type="text" maxlength="40" placeholder="예: OO연고">
+        <div class="err" id="errName">약 이름을 입력해 주세요.</div>
+      </div>
+      <div class="field">
+        <label for="fMaker">제조사 <span style="font-weight:400;color:var(--muted)">(선택)</span></label>
+        <input class="inp" id="fMaker" type="text" maxlength="30" placeholder="예: 동화약품">
+      </div>
+      <div class="field">
+        <label for="fCat">분류</label>
+        <select class="inp" id="fCat"></select>
+      </div>
+      <div class="field">
+        <label for="fUse">효능·용도 <span style="font-weight:400;color:var(--muted)">(선택)</span></label>
+        <textarea class="inp" id="fUse" maxlength="80" placeholder="예: 상처 소독"></textarea>
+      </div>
+    </div>
+
+    <!-- 제약: 달력 + 빠른 버튼 -->
+    <div class="field">
+      <span class="lbl">사용기한</span>
+      <input class="inp" id="fExp" type="date" aria-label="사용기한">
+      <div class="quick">
+        <button type="button" data-add="6">+6개월</button>
+        <button type="button" data-add="12">+1년</button>
+        <button type="button" data-add="24">+2년</button>
+      </div>
+      <div class="dday-preview" id="ddayPreview"></div>
+      <div class="hint">포장지의 사용기한을 달력에서 고르거나, 오늘 기준 빠른 버튼을 눌러요.</div>
+      <div class="err" id="errExp">사용기한을 선택해 주세요.</div>
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <span class="lbl">현재 수량</span>
+        <div class="stepper">
+          <button type="button" data-step="qty" data-d="-1" aria-label="현재 수량 줄이기">−</button>
+          <input id="fQty" type="number" inputmode="numeric" min="0" max="999" value="1" aria-label="현재 수량">
+          <button type="button" data-step="qty" data-d="1" aria-label="현재 수량 늘리기">+</button>
+        </div>
+      </div>
+      <div class="field">
+        <span class="lbl">적정 기준 수량</span>
+        <div class="stepper">
+          <button type="button" data-step="min" data-d="-1" aria-label="기준 수량 줄이기">−</button>
+          <input id="fMin" type="number" inputmode="numeric" min="0" max="999" value="1" aria-label="적정 기준 수량">
+          <button type="button" data-step="min" data-d="1" aria-label="기준 수량 늘리기">+</button>
+        </div>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label for="fUnit">단위</label>
+        <select class="inp" id="fUnit">
+          <option>개</option><option>정</option><option>캡슐</option><option>포</option><option>병</option><option>통</option><option>장</option><option>매</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="fMemo">보관 위치·메모</label>
+        <input class="inp" id="fMemo" type="text" maxlength="30" placeholder="예: 거실 서랍">
+      </div>
+    </div>
+    <div class="hint" style="margin:-6px 0 14px;font-size:12.5px;color:var(--muted)">현재 수량이 적정 기준 수량 이하가 되면 '수량 부족'으로 알려줘요.</div>
+
+    <div class="sheet-actions">
+      <button class="btn gray" type="button" id="btnCancel">취소</button>
+      <button class="btn" type="button" id="btnSave">저장</button>
+    </div>
+  </div>
+</section>
+
+<!-- 확인 모달 (오류 방지) -->
+<div class="modal" id="confirmModal" role="alertdialog" aria-modal="true">
+  <h4 id="cTitle">확인</h4>
+  <p id="cMsg"></p>
+  <div class="acts">
+    <button class="btn gray" id="cNo" type="button">다시 볼게요</button>
+    <button class="btn" id="cYes" type="button">그대로 저장</button>
+  </div>
+</div>
+
+<!-- QR 모달 -->
+<div class="modal" id="qrModal" role="dialog" aria-modal="true">
+  <h4>보관함 QR코드</h4>
+  <div class="field" style="margin-bottom:8px">
+    <label for="qrUrl" style="font-size:13px">앱 주소 (GitHub Pages 배포 주소)</label>
+    <input class="inp" id="qrUrl" type="url" placeholder="https://아이디.github.io/medicheck/">
+  </div>
+  <button class="btn line block" id="btnMakeQr" type="button">QR코드 만들기</button>
+  <div id="qrPrint" hidden>
+    <img id="qrImg" alt="메디체크 앱 주소 QR코드">
+    <div class="qr-title">우리집 상비약함</div>
+    <div class="qr-sub">휴대폰 카메라로 찍으면 메디체크가 열려요</div>
+  </div>
+  <div class="qr-msg" id="qrMsg"></div>
+  <div class="acts">
+    <button class="btn gray" id="qrClose" type="button">닫기</button>
+    <button class="btn" id="qrPrintBtn" type="button" disabled>인쇄하기</button>
+  </div>
+</div>
+
+<!-- 되돌리기 토스트 -->
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span id="toastMsg"></span>
+  <button type="button" id="toastUndo">되돌리기</button>
+  <div class="bar"></div>
+</div>
+
+<script>
+/* =========================================================
+   메디체크 v0.1 — 비용 0원, API 키 없음, localStorage 저장
+   ========================================================= */
+
+const CATS = ['진통·해열','소화','상처·소독','감기','기타'];
+
+/* 내장 상비약 목록 — 국내 시판 제품 (효능은 참고용 요약, 2026.11 기준) */
+const CATALOG = [
+  // 진통·해열
+  {name:'타이레놀정 500mg', maker:'켄뷰코리아(구 한국존슨앤드존슨)', cat:'진통·해열', use:'해열, 두통·치통·생리통·근육통 완화 (아세트아미노펜)', unit:'정'},
+  {name:'어린이타이레놀현탁액', maker:'켄뷰코리아(구 한국존슨앤드존슨)', cat:'진통·해열', use:'어린이 해열·통증 완화 (아세트아미노펜)', unit:'병'},
+  {name:'챔프시럽', maker:'동아제약', cat:'진통·해열', use:'어린이 해열·통증 완화 (아세트아미노펜, 짜먹는 파우치)', unit:'포'},
+  {name:'부루펜시럽', maker:'삼일제약', cat:'진통·해열', use:'어린이 해열·진통·소염 (이부프로펜)', unit:'병'},
+  {name:'맥시부펜시럽', maker:'한미약품', cat:'진통·해열', use:'어린이 해열·진통 (덱시부프로펜)', unit:'병'},
+  {name:'게보린정', maker:'삼진제약', cat:'진통·해열', use:'두통·치통·생리통 완화 (복합 진통제)', unit:'정'},
+  {name:'펜잘큐정', maker:'종근당', cat:'진통·해열', use:'두통·치통·생리통 등 통증 완화 (복합 진통제)', unit:'정'},
+  {name:'탁센연질캡슐', maker:'GC녹십자', cat:'진통·해열', use:'두통·생리통·근육통 등 통증 완화 (나프록센)', unit:'캡슐'},
+  {name:'이지엔6애니연질캡슐', maker:'대웅제약', cat:'진통·해열', use:'두통·치통·생리통 등 통증 완화 (이부프로펜)', unit:'캡슐'},
+  {name:'그날엔더블유연질캡슐', maker:'경동제약', cat:'진통·해열', use:'생리통 완화 (이부프로펜 복합)', unit:'캡슐'},
+
+  // 소화 (소화제·제산제·지사제)
+  {name:'베아제정', maker:'대웅제약', cat:'소화', use:'소화불량·식체·과식 시 소화 도움 (소화효소 복합)', unit:'정'},
+  {name:'훼스탈플러스정', maker:'한독', cat:'소화', use:'소화불량·위부팽만감 완화 (소화효소 복합)', unit:'정'},
+  {name:'까스활명수', maker:'동화약품', cat:'소화', use:'소화불량·식욕감퇴·위부팽만감 (생약 소화제)', unit:'병'},
+  {name:'겔포스엠현탁액', maker:'보령', cat:'소화', use:'속쓰림·위산과다·위통 완화 (제산제)', unit:'포'},
+  {name:'개비스콘더블액션현탁액', maker:'옥시레킷벤키저', cat:'소화', use:'위산 역류로 인한 속쓰림·소화불량 완화', unit:'포'},
+  {name:'트리겔현탁액', maker:'대원제약', cat:'소화', use:'속쓰림·위산과다 완화 (제산제, 짜먹는 파우치)', unit:'포'},
+  {name:'노루모산', maker:'일양약품', cat:'소화', use:'위산과다·속쓰림·소화불량 (제산·소화제)', unit:'포'},
+  {name:'스멕타현탁액', maker:'대웅제약', cat:'소화', use:'급·만성 설사 완화 (지사제, 디오스멕타이트)', unit:'포'},
+  {name:'정로환', maker:'동성제약', cat:'소화', use:'설사·묽은 변·식체 (지사제)', unit:'정'},
+  {name:'로프민캡슐', maker:'영일제약', cat:'소화', use:'급·만성 설사 완화 (지사제, 로페라미드)', unit:'캡슐'},
+
+  // 상처·소독
+  {name:'후시딘연고', maker:'동화약품', cat:'상처·소독', use:'상처·피부의 세균 감염 치료 (항생제 연고, 퓨시드산)', unit:'통'},
+  {name:'마데카솔케어연고', maker:'동국제약', cat:'상처·소독', use:'상처 회복 도움·2차 감염 예방', unit:'통'},
+  {name:'포비돈요오드액 (빨간약)', maker:'여러 제조사', cat:'상처·소독', use:'상처 부위 소독', unit:'병'},
+  {name:'과산화수소수', maker:'여러 제조사', cat:'상처·소독', use:'상처 세정·소독', unit:'병'},
+  {name:'소독용 에탄올', maker:'여러 제조사', cat:'상처·소독', use:'피부·기구 소독 (깊은 상처에 직접 사용은 피하기)', unit:'병'},
+  {name:'메디폼', maker:'한국먼디파마', cat:'상처·소독', use:'습윤 드레싱 — 진물 흡수, 찰과상 등 상처 보호', unit:'매'},
+  {name:'이지덤', maker:'대웅제약', cat:'상처·소독', use:'습윤 드레싱 — 긁힌 상처·찰과상 보호', unit:'매'},
+  {name:'듀오덤', maker:'보령', cat:'상처·소독', use:'하이드로콜로이드 습윤 드레싱 — 상처 보호', unit:'매'},
+  {name:'하이맘', maker:'JW중외제약', cat:'상처·소독', use:'습윤 드레싱 — 상처 보호', unit:'매'},
+  {name:'메디터치', maker:'일동제약', cat:'상처·소독', use:'습윤 드레싱 — 상처 보호', unit:'매'},
+  {name:'일회용 밴드 (대일밴드 등)', maker:'여러 제조사', cat:'상처·소독', use:'작은 상처 보호', unit:'매'},
+
+  // 감기
+  {name:'판콜에이내복액', maker:'동화약품', cat:'감기', use:'콧물·코막힘·기침·발열 등 종합감기 증상 완화', unit:'병'},
+  {name:'판피린큐액', maker:'동아제약', cat:'감기', use:'감기 초기 발열·두통·콧물 완화', unit:'병'},
+  {name:'콜대원콜드큐시럽', maker:'대원제약', cat:'감기', use:'종합감기 증상 완화 (짜먹는 파우치)', unit:'포'},
+  {name:'콜대원코프큐시럽', maker:'대원제약', cat:'감기', use:'기침·가래 감기 완화 (짜먹는 파우치)', unit:'포'},
+  {name:'콜대원노즈큐시럽', maker:'대원제약', cat:'감기', use:'콧물·코막힘 코감기 완화 (짜먹는 파우치)', unit:'포'},
+  {name:'콜대원키즈코프시럽', maker:'대원제약', cat:'감기', use:'어린이 기침 감기 완화 (짜먹는 파우치)', unit:'포'},
+  {name:'코푸시럽에스', maker:'유한양행', cat:'감기', use:'기침·가래 완화', unit:'병'},
+  {name:'용각산', maker:'보령', cat:'감기', use:'기침·가래·목 불편감 완화 (생약 가루)', unit:'통'},
+  {name:'스트렙실 허니앤레몬 트로키', maker:'옥시레킷벤키저', cat:'감기', use:'인후통·목 염증 완화 (입에서 녹여 먹는 트로키)', unit:'정'},
+  {name:'액티피드정', maker:'삼일제약', cat:'감기', use:'콧물·코막힘·재채기 완화', unit:'정'},
+  {name:'지르텍정', maker:'한국유씨비제약', cat:'감기', use:'알레르기 비염·콧물·재채기·두드러기 완화 (세티리진)', unit:'정'},
+
+  // 기타 (피부·근육통·구내염·멀미)
+  {name:'버물리에스액', maker:'현대약품', cat:'기타', use:'벌레 물림·가려움 완화', unit:'병'},
+  {name:'신신물파스', maker:'신신제약', cat:'기타', use:'근육통·벌레 물림·가려움 완화 (바르는 액)', unit:'병'},
+  {name:'신신파스아렉스', maker:'신신제약', cat:'기타', use:'근육통·관절통·타박상·삠 통증 완화 (붙이는 파스)', unit:'매'},
+  {name:'케토톱', maker:'한독', cat:'기타', use:'관절통·근육통·요통 완화 (케토프로펜 패치)', unit:'매'},
+  {name:'안티푸라민 연고', maker:'유한양행', cat:'기타', use:'근육통·타박상·삠 통증 완화', unit:'통'},
+  {name:'쎄레스톤지크림', maker:'유한양행', cat:'기타', use:'습진·피부염 등 염증성 피부질환 (스테로이드·항생제 복합)', unit:'통'},
+  {name:'리도맥스크림', maker:'삼아제약', cat:'기타', use:'습진·피부염·가려움 완화 (약한 스테로이드)', unit:'통'},
+  {name:'카네스텐크림', maker:'바이엘코리아', cat:'기타', use:'무좀·완선 등 피부 곰팡이(진균) 감염 치료', unit:'통'},
+  {name:'오라메디연고', maker:'동국제약', cat:'기타', use:'입안 염증·구내염 완화', unit:'통'},
+  {name:'키미테패취', maker:'명문제약', cat:'기타', use:'멀미 예방 (귀 뒤에 붙이는 패치, 사용 연령 확인)', unit:'매'},
+];
+
+/* ---------- 저장 (localStorage, 실패 시 메모리) ---------- */
+const STORE_KEY = 'medicheck.v1';
+let memoryStore = null;
+function loadItems(){
+  try{
+    const s = localStorage.getItem(STORE_KEY);
+    return s ? JSON.parse(s) : [];
+  }catch(e){ return memoryStore ? JSON.parse(memoryStore) : []; }
+}
+function saveItems(){
+  const data = JSON.stringify(items);
+  try{ localStorage.setItem(STORE_KEY, data); }
+  catch(e){ memoryStore = data; }
+}
+
+/* ---------- 날짜 도우미 ---------- */
+const pad = n => String(n).padStart(2,'0');
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const todayStr = () => ymd(new Date());
+function parseYmd(s){ const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); }
+function daysLeft(exp){ return Math.round((parseYmd(exp) - parseYmd(todayStr())) / 86400000); }
+function addMonthsFromToday(n){
+  const d = new Date(); const day = d.getDate();
+  d.setDate(1); d.setMonth(d.getMonth() + n);
+  const last = new Date(d.getFullYear(), d.getMonth()+1, 0).getDate();
+  d.setDate(Math.min(day, last));
+  return ymd(d);
+}
+function addDaysFromToday(n){ const d = new Date(); d.setDate(d.getDate()+n); return ymd(d); }
+const dotDate = s => s.replaceAll('-','.');
+function ddayText(dl){ return dl === 0 ? 'D-DAY' : dl > 0 ? `D-${dl}` : `D+${-dl}`; }
+
+/* ---------- 상태 계산 ---------- */
+const SOON_DAYS = 30;
+function statusOf(it){
+  const dl = daysLeft(it.exp);
+  return {
+    dl,
+    expired: dl < 0,
+    soon: dl >= 0 && dl <= SOON_DAYS,
+    low: it.qty <= it.min,
+  };
+}
+function rank(it){
+  const s = statusOf(it);
+  if (s.expired) return 0;
+  if (s.soon) return 1;
+  if (s.low) return 2;
+  return 3;
+}
+
+/* ---------- 상태 ---------- */
+let items = loadItems();
+let filterCat = '전체';
+let filterStatus = 'all';
+let query = '';
+let editingId = null;
+let formMode = 'catalog';
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+
+/* ---------- 렌더링 ---------- */
+function renderChips(){
+  $('chips').innerHTML = ['전체', ...CATS].map(c =>
+    `<button type="button" class="chip ${c===filterCat?'active':''}" data-cat="${c}">${c}</button>`
+  ).join('');
+}
+
+function renderSummary(){
+  let ex=0, so=0, lo=0;
+  items.forEach(it => { const s = statusOf(it); if(s.expired) ex++; if(s.soon) so++; if(s.low) lo++; });
+  $('cAll').textContent = items.length;
+  $('cExpired').textContent = ex;
+  $('cSoon').textContent = so;
+  $('cLow').textContent = lo;
+  document.querySelectorAll('.sum').forEach(b => b.classList.toggle('active', b.dataset.status === filterStatus));
+
+  const line = $('alertLine');
+  if (!items.length){ line.className='alert-line'; line.textContent='아래 [+ 상비약 등록] 버튼으로 첫 약을 등록해 보세요.'; return; }
+  const parts = [];
+  if (ex) parts.push(`기한 지난 약 ${ex}개`);
+  if (so) parts.push(`곧 기한 끝나는 약 ${so}개`);
+  if (lo) parts.push(`보충할 약 ${lo}개`);
+  if (parts.length){ line.className='alert-line warn'; line.textContent = '⚠ ' + parts.join(' · ') + '가 있어요.'; }
+  else { line.className='alert-line'; line.textContent = '✓ 모든 상비약이 기한과 수량 모두 괜찮아요.'; }
+}
+
+function filtered(){
+  const q = query.trim().toLowerCase();
+  return items
+    .filter(it => filterCat === '전체' || it.cat === filterCat)
+    .filter(it => {
+      if (filterStatus === 'all') return true;
+      return statusOf(it)[filterStatus];
+    })
+    .filter(it => !q || [it.name, it.use, it.memo, it.cat, it.maker].join(' ').toLowerCase().includes(q))
+    .sort((a,b) => rank(a) - rank(b) || daysLeft(a.exp) - daysLeft(b.exp) || a.name.localeCompare(b.name,'ko'));
+}
+
+function renderList(){
+  const statusName = {all:'', expired:'기한 경과', soon:'30일 이내', low:'수량 부족'}[filterStatus];
+  $('listTitle').textContent = [filterCat==='전체'?'전체':filterCat, statusName].filter(Boolean).join(' · ') + ' 상비약';
+
+  const list = filtered();
+  if (!items.length){
+    $('list').innerHTML = `
+      <div class="empty">
+        <div class="big">💊</div>
+        <b>아직 등록된 상비약이 없어요</b>
+        <p>집에 있는 상비약을 등록하면<br>사용기한과 수량을 대신 챙겨 드려요.</p>
+        <button class="btn line" type="button" id="btnSample">예시 데이터로 둘러보기</button>
+      </div>`;
+    return;
+  }
+  if (!list.length){
+    $('list').innerHTML = `<div class="empty"><div class="big">🔍</div><b>조건에 맞는 약이 없어요</b><p>필터나 검색어를 바꿔 보세요.</p></div>`;
+    return;
+  }
+
+  $('list').innerHTML = list.map(it => {
+    const s = statusOf(it);
+    const cls = s.expired ? 'st-expired' : s.soon ? 'st-soon' : s.low ? 'st-low' : '';
+    const badges = [];
+    if (s.expired) badges.push(`<span class="badge red">기한 경과 ${ddayText(s.dl)} · 사용 금지</span>`);
+    else if (s.soon) badges.push(`<span class="badge yellow">기한 임박 ${ddayText(s.dl)}</span>`);
+    if (s.low) badges.push(`<span class="badge orange">${it.qty===0?'다 떨어짐':'수량 부족'} · 보충 필요</span>`);
+    if (!badges.length) badges.push(`<span class="badge ok">정상</span>`);
+    return `
+    <article class="med ${cls}" data-id="${it.id}">
+      <div class="med-top">
+        <div class="med-name">${esc(it.name)}</div>
+        <span class="cat-tag">${esc(it.cat)}</span>
+      </div>
+      ${it.maker ? `<div class="med-maker">${esc(it.maker)}</div>` : ''}
+      ${it.use ? `<div class="med-use">${esc(it.use)}</div>` : ''}
+      <div class="badges">${badges.join('')}</div>
+      <div class="med-meta">
+        <span>사용기한 <b>${dotDate(it.exp)}</b> (${ddayText(s.dl)})</span>
+        ${it.memo ? `<span>보관: <b>${esc(it.memo)}</b></span>` : ''}
+      </div>
+      <div class="med-bottom">
+        <div class="qty-box">
+          <button class="qbtn use" type="button" data-act="use" ${it.qty<=0?'disabled':''} aria-label="${esc(it.name)} 1${esc(it.unit)} 사용">−1 사용</button>
+          <div class="qty-num"><b>${it.qty}</b> / ${it.min} ${esc(it.unit)}</div>
+          <button class="qbtn" type="button" data-act="plus" aria-label="${esc(it.name)} 1${esc(it.unit)} 보충">+1</button>
+        </div>
+        <div class="med-actions">
+          <button class="ghost" type="button" data-act="edit">수정</button>
+          <button class="ghost danger" type="button" data-act="del">삭제</button>
+        </div>
+      </div>
+    </article>`;
+  }).join('');
+}
+
+function render(){ renderChips(); renderSummary(); renderList(); }
+
+/* ---------- 되돌리기 토스트 (5초) ---------- */
+let undoSnapshot = null, toastTimer = null;
+function withUndo(message, mutate){
+  undoSnapshot = JSON.stringify(items);
+  mutate();
+  saveItems(); render();
+  const t = $('toast');
+  $('toastMsg').textContent = message;
+  $('toastUndo').hidden = false;
+  t.classList.remove('show'); void t.offsetWidth; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.classList.remove('show'); undoSnapshot = null; }, 5000);
+}
+$('toastUndo').addEventListener('click', () => {
+  if (!undoSnapshot) return;
+  items = JSON.parse(undoSnapshot); undoSnapshot = null;
+  saveItems(); render();
+  clearTimeout(toastTimer);
+  $('toastMsg').textContent = '되돌렸어요.';
+  $('toastUndo').hidden = true;
+  toastTimer = setTimeout(() => $('toast').classList.remove('show'), 1200);
+});
+
+/* ---------- 목록 버튼 ---------- */
+$('list').addEventListener('click', e => {
+  if (e.target.id === 'btnSample'){ addSamples(); return; }
+  const btn = e.target.closest('button[data-act]'); if (!btn) return;
+  const id = btn.closest('.med').dataset.id;
+  const it = items.find(x => x.id === id); if (!it) return;
+  const act = btn.dataset.act;
+  if (act === 'use'){
+    if (it.qty <= 0) return;
+    withUndo(`${it.name} 1${it.unit} 사용 → 남은 수량 ${it.qty-1}${it.unit}`, () => { it.qty -= 1; });
+  } else if (act === 'plus'){
+    withUndo(`${it.name} 1${it.unit} 보충 → ${it.qty+1}${it.unit}`, () => { it.qty = Math.min(999, it.qty + 1); });
+  } else if (act === 'edit'){
+    openSheet(it);
+  } else if (act === 'del'){
+    withUndo(`'${it.name}'을(를) 삭제했어요.`, () => { items = items.filter(x => x.id !== id); });
+  }
+});
+
+/* ---------- 필터 ---------- */
+$('chips').addEventListener('click', e => {
+  const c = e.target.closest('.chip'); if (!c) return;
+  filterCat = c.dataset.cat; render();
+});
+document.querySelector('.summary').addEventListener('click', e => {
+  const b = e.target.closest('.sum'); if (!b) return;
+  filterStatus = (filterStatus === b.dataset.status && b.dataset.status !== 'all') ? 'all' : b.dataset.status;
+  render();
+});
+$('searchInp').addEventListener('input', e => { query = e.target.value; renderList(); });
+
+/* ---------- 등록 시트 ---------- */
+function fillCatOptions(){
+  $('fCat').innerHTML = CATS.map(c => `<option>${c}</option>`).join('');
+}
+function fillCatalog(q=''){
+  const k = q.trim().toLowerCase();
+  const prev = $('catalogSel').value;
+  let html = '<option value="">— 약을 골라 주세요 —</option>';
+  CATS.forEach(cat => {
+    const opts = CATALOG.map((m,i)=>({...m,i}))
+      .filter(m => m.cat === cat && (!k || (m.name + m.use + m.cat + m.maker).toLowerCase().includes(k)));
+    if (opts.length) html += `<optgroup label="${cat}">` + opts.map(m => `<option value="${m.i}">${esc(m.name)} · ${esc(m.maker)}</option>`).join('') + '</optgroup>';
+  });
+  $('catalogSel').innerHTML = html;
+  if ([...$('catalogSel').options].some(o => o.value === prev)) $('catalogSel').value = prev;
+  showCatalogInfo();
+}
+function showCatalogInfo(){
+  const v = $('catalogSel').value, box = $('catalogInfo');
+  if (v === ''){ box.hidden = true; return; }
+  const m = CATALOG[+v];
+  box.hidden = false;
+  box.innerHTML = `<b>${esc(m.cat)} · ${esc(m.maker)}</b>${esc(m.use)}`;
+  $('fUnit').value = m.unit;
+  $('errCatalog').classList.remove('show');
+}
+$('catalogSel').addEventListener('change', showCatalogInfo);
+$('catalogSearch').addEventListener('input', e => fillCatalog(e.target.value));
+
+function setMode(mode){
+  formMode = mode;
+  document.querySelectorAll('#modeSeg button').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  $('catalogArea').hidden = mode !== 'catalog';
+  $('customArea').hidden = mode !== 'custom';
+}
+$('modeSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setMode(b.dataset.mode); });
+
+function updateDdayPreview(){
+  const v = $('fExp').value, el = $('ddayPreview');
+  if (!v){ el.textContent=''; return; }
+  const dl = daysLeft(v);
+  el.textContent = `${dotDate(v)} · ${ddayText(dl)}` + (dl < 0 ? ' (이미 지난 날짜)' : dl <= SOON_DAYS ? ' (30일 이내 임박)' : '');
+  el.style.color = dl < 0 ? 'var(--red)' : dl <= SOON_DAYS ? 'var(--yellow)' : 'var(--ok)';
+  $('errExp').classList.remove('show');
+}
+$('fExp').addEventListener('change', updateDdayPreview);
+$('fExp').addEventListener('input', updateDdayPreview);
+document.querySelector('.quick').addEventListener('click', e => {
+  const b = e.target.closest('button[data-add]'); if (!b) return;
+  $('fExp').value = addMonthsFromToday(+b.dataset.add);
+  updateDdayPreview();
+});
+
+/* 숫자 스테퍼 */
+function clampNum(inp){ let n = parseInt(inp.value,10); if (isNaN(n) || n < 0) n = 0; if (n > 999) n = 999; inp.value = n; return n; }
+document.querySelectorAll('[data-step]').forEach(b => b.addEventListener('click', () => {
+  const inp = b.dataset.step === 'qty' ? $('fQty') : $('fMin');
+  inp.value = Math.max(0, Math.min(999, (parseInt(inp.value,10)||0) + (+b.dataset.d)));
+}));
+['fQty','fMin'].forEach(id => $(id).addEventListener('blur', e => clampNum(e.target)));
+
+function openSheet(it=null){
+  editingId = it ? it.id : null;
+  $('sheetTitle').textContent = it ? '상비약 수정' : '상비약 등록';
+  document.querySelectorAll('.err').forEach(x => x.classList.remove('show'));
+  $('catalogSearch').value = ''; fillCatalog();
+  if (it){
+    setMode('custom');
+    $('modeSeg').style.display = 'none';
+    $('fName').value = it.name; $('fMaker').value = it.maker || ''; $('fCat').value = it.cat; $('fUse').value = it.use || '';
+    $('fExp').value = it.exp; $('fQty').value = it.qty; $('fMin').value = it.min;
+    $('fUnit').value = it.unit; $('fMemo').value = it.memo || '';
+  } else {
+    setMode('catalog');
+    $('modeSeg').style.display = '';
+    $('catalogSel').value = ''; showCatalogInfo();
+    $('fName').value = ''; $('fMaker').value = ''; $('fCat').value = filterCat !== '전체' ? filterCat : CATS[0]; $('fUse').value = '';
+    $('fExp').value = ''; $('fQty').value = 1; $('fMin').value = 1; $('fUnit').value = '개'; $('fMemo').value = '';
+  }
+  updateDdayPreview();
+  $('toast').classList.remove('show');
+  $('overlay').classList.add('show');
+  $('sheet').classList.add('show');
+  $('sheet').scrollTop = 0;
+}
+function closeSheet(){
+  $('sheet').classList.remove('show');
+  if (!$('confirmModal').classList.contains('show') && !$('qrModal').classList.contains('show')) $('overlay').classList.remove('show');
+}
+$('btnAdd').addEventListener('click', () => openSheet());
+$('btnCancel').addEventListener('click', closeSheet);
+$('overlay').addEventListener('click', () => {
+  if ($('confirmModal').classList.contains('show')) return;
+  if ($('qrModal').classList.contains('show')) { closeQr(); return; }
+  closeSheet();
+});
+
+/* 오류 방지: 재확인 모달 */
+function confirmBox(title, msg, yesText='그대로 저장'){
+  return new Promise(resolve => {
+    $('cTitle').textContent = title; $('cMsg').textContent = msg; $('cYes').textContent = yesText;
+    $('overlay').classList.add('show');
+    $('confirmModal').classList.add('show');
+    const done = v => {
+      $('confirmModal').classList.remove('show');
+      if (!$('sheet').classList.contains('show')) $('overlay').classList.remove('show');
+      $('cYes').onclick = $('cNo').onclick = null;
+      resolve(v);
+    };
+    $('cYes').onclick = () => done(true);
+    $('cNo').onclick = () => done(false);
+  });
+}
+
+$('btnSave').addEventListener('click', async () => {
+  let name, cat, use, maker = '', fromCatalog = false;
+  if (formMode === 'catalog'){
+    const v = $('catalogSel').value;
+    if (v === ''){ $('errCatalog').classList.add('show'); $('catalogSel').focus(); return; }
+    const m = CATALOG[+v]; name = m.name; cat = m.cat; use = m.use; maker = m.maker; fromCatalog = true;
+  } else {
+    name = $('fName').value.trim(); cat = $('fCat').value; use = $('fUse').value.trim(); maker = $('fMaker').value.trim();
+    if (!name){ $('errName').classList.add('show'); $('fName').focus(); return; }
+  }
+  const exp = $('fExp').value;
+  if (!exp){ $('errExp').classList.add('show'); return; }
+  const qty = clampNum($('fQty')), min = clampNum($('fMin'));
+
+  if (daysLeft(exp) < 0){
+    const ok = await confirmBox('이미 지난 사용기한이에요', `${dotDate(exp)}은(는) 오늘보다 이전 날짜예요.\n포장지의 사용기한을 다시 확인해 주세요.\n그래도 이 날짜로 저장할까요?`);
+    if (!ok) return;
+  }
+  if (qty === 0){
+    const ok = await confirmBox('현재 수량이 0개예요', `남은 약이 없는 상태로 저장하면 '다 떨어짐'으로 표시돼요.\n그래도 저장할까요?`);
+    if (!ok) return;
+  }
+
+  const data = { name, maker, cat, use, exp, qty, min, unit: $('fUnit').value, memo: $('fMemo').value.trim(), fromCatalog };
+  if (editingId){
+    const it = items.find(x => x.id === editingId);
+    withUndo(`'${name}' 정보를 수정했어요.`, () => Object.assign(it, data));
+  } else {
+    withUndo(`'${name}'을(를) 등록했어요.`, () => items.push({ id: uid(), ...data }));
+  }
+  closeSheet();
+});
+
+/* ---------- 예시 데이터 ---------- */
+function addSamples(){
+  const pick = n => CATALOG.find(m => m.name.startsWith(n));
+  const mk = (n, exp, qty, min, memo) => { const m = pick(n); return { id: uid(), name:m.name, maker:m.maker, cat:m.cat, use:m.use, unit:m.unit, exp, qty, min, memo, fromCatalog:true }; };
+  withUndo('예시 데이터 5개를 넣었어요.', () => {
+    items.push(
+      mk('타이레놀정', addDaysFromToday(-12), 6, 4, '거실 서랍'),
+      mk('후시딘', addDaysFromToday(18), 1, 1, '구급상자'),
+      mk('베아제', addMonthsFromToday(10), 2, 5, '주방 선반'),
+      mk('판콜에이', addMonthsFromToday(14), 5, 2, '거실 서랍'),
+      mk('일회용 밴드', addMonthsFromToday(24), 20, 10, '구급상자'),
+    );
+  });
+}
+
+/* ---------- QR코드 (키 없는 무료 API: api.qrserver.com) ---------- */
+function openQr(){
+  const isWeb = /^https?:/.test(location.protocol);
+  $('qrUrl').value = isWeb ? location.href.split('#')[0] : '';
+  $('qrMsg').textContent = isWeb ? '' : '배포한 앱 주소(https://...)를 입력해 주세요.';
+  $('qrPrint').hidden = true; $('qrPrintBtn').disabled = true;
+  $('overlay').classList.add('show'); $('qrModal').classList.add('show');
+}
+function closeQr(){
+  $('qrModal').classList.remove('show');
+  if (!$('sheet').classList.contains('show')) $('overlay').classList.remove('show');
+}
+$('btnQr').addEventListener('click', openQr);
+$('qrClose').addEventListener('click', closeQr);
+$('btnMakeQr').addEventListener('click', () => {
+  const url = $('qrUrl').value.trim();
+  if (!/^https?:\/\/\S+\.\S+/.test(url)){ $('qrMsg').textContent = 'https:// 로 시작하는 주소를 입력해 주세요.'; return; }
+  $('qrMsg').textContent = 'QR코드를 만드는 중…';
+  const img = $('qrImg');
+  img.onload = () => { $('qrPrint').hidden = false; $('qrPrintBtn').disabled = false; $('qrMsg').textContent = '보관함에 붙일 수 있게 인쇄해 보세요.'; };
+  img.onerror = () => { $('qrPrint').hidden = true; $('qrPrintBtn').disabled = true; $('qrMsg').textContent = 'QR코드를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.'; };
+  img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=10&data=' + encodeURIComponent(url);
+});
+$('qrPrintBtn').addEventListener('click', () => window.print());
+
+/* ---------- 시작 ---------- */
+(function init(){
+  const d = new Date(), wk = '일월화수목금토'[d.getDay()];
+  $('todayText').textContent = `오늘 ${d.getMonth()+1}월 ${d.getDate()}일 (${wk})`;
+  fillCatOptions();
+  render();
+})();
+</script>
+</body>
+</html>
